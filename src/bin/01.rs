@@ -1,4 +1,3 @@
-use std::collections::BinaryHeap;
 use std::iter::Map;
 use std::str::Split;
 
@@ -16,8 +15,21 @@ fn calories_per_elf(input: &str) -> Map<Split<&str>, fn(&str) -> u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let mut sorted: BinaryHeap<_> = calories_per_elf(input).collect();
-    Some(sorted.pop().unwrap() + sorted.pop().unwrap() + sorted.pop().unwrap()) //TODO ugly
+    let mut maxs = [0, 0, 0];
+    calories_per_elf(input).for_each(|c| {
+        if c > maxs[0] {
+            maxs[2] = maxs[1];
+            maxs[1] = maxs[0];
+            maxs[0] = c;
+        } else if c > maxs[1] {
+            maxs[2] = maxs[1];
+            maxs[1] = c;
+        } else if c > maxs[2]  {
+            maxs[2] = c
+        }
+    });
+
+    Some(maxs.iter().sum())
 }
 
 fn main() {

@@ -1,16 +1,57 @@
 use std::ops;
-use crate::Options::{Paper, Rock, Scissors};
+use crate::Result::{Lose, Draw, Win};
+use crate::Shape::{Paper, Rock, Scissors};
 
 #[derive(Debug)]
-enum Options {
+enum Shape {
     Rock,
     Paper,
     Scissors,
 }
 
+enum Result {
+    Win,
+    Draw,
+    Lose,
+}
 
+impl Result {
+    fn value(&self) -> u32 {
+        match self {
+            Win => { 6 }
+            Draw => { 3 }
+            Lose => { 0 }
+        }
+    }
+}
 
-impl Clone for Options {
+impl Shape {
+    fn value(&self) -> u32 {
+        match self {
+            Rock => { 1 }
+            Paper => { 2 }
+            Scissors => { 3 }
+        }
+    }
+
+    fn shape_from_result(&self, res: Result) -> Shape {
+        match res {
+            Lose => { match self {
+                Rock => { Scissors }
+                Paper => { Rock}
+                Scissors => { Paper }
+            } }
+            Draw => { *self }
+            Win => { match self {
+                Rock => { Paper }
+                Paper => { Scissors }
+                Scissors => { Rock}
+            }}
+        }
+    }
+}
+
+impl Clone for Shape {
     fn clone(&self) -> Self {
         match self {
             Rock => { Rock }
@@ -20,12 +61,24 @@ impl Clone for Options {
     }
 }
 
-impl Copy for Options{}
+impl Copy for Shape {}
 
-impl ops::Add<Options> for Options {
+impl Clone for Result {
+    fn clone(&self) -> Self {
+        match self {
+            Win => { Win }
+            Draw => { Draw }
+            Lose => { Lose }
+        }
+    }
+}
+
+impl Copy for Result {}
+
+impl ops::Add<Shape> for Shape {
     type Output = u32;
 
-    fn add(self, rhs: Options) -> Self::Output {
+    fn add(self, rhs: Shape) -> Self::Output {
         match self {
             Rock => {
                 match rhs {
@@ -54,7 +107,7 @@ impl ops::Add<Options> for Options {
 
 pub fn part_one(input: &str) -> Option<u32> {
     let results: u32 = input.split('\n').map(|m| {
-        let match_result: Vec<Options> = m.split(' ').map(|side| {
+        let match_result: Vec<Shape> = m.split(' ').map(|side| {
             match side {
                 "A" | "X" => { Rock }
                 "B" | "Y" => { Paper }
@@ -69,8 +122,27 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(results)
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let sum = input.split('\n').map(|line|{
+        let shape1 = match line.chars().next().unwrap() {
+            'A' => { Rock }
+            'B' => { Paper }
+            'C' => { Scissors }
+            _ => panic!()
+        };
+        let result = match line.chars().nth(2).unwrap() {
+            'X' => { Lose }
+            'Y' => { Draw }
+            'Z' => { Win }
+            _ => panic!()
+        };
+
+        let shape2 = shape1.shape_from_result(result);
+        result.value() + shape2.value()
+    }).sum();
+
+    Some(sum)
+
 }
 
 fn main() {

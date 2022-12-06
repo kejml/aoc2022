@@ -39,6 +39,28 @@ fn move_containers_9000(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<cha
     });
 }
 
+fn move_containers_9001(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<char>>) {
+    instructions.next().unwrap().lines().for_each(|line| {
+        let instruction = line.split(' ').collect::<Vec<_>>();
+        let times: u8 = instruction[1].parse().unwrap();
+
+        let mut moving_stack = Vec::<char>::new();
+        {
+            let from: &mut Vec<char> = &mut stacks[instruction[3].parse::<usize>().unwrap() - 1];
+            for _i in 0..times {
+                moving_stack.push(from.pop().unwrap())
+            }
+        }
+        {
+            let to: &mut Vec<char> = &mut stacks[instruction[5].parse::<usize>().unwrap() - 1];
+            for _i in 0..times {
+                to.push(moving_stack.pop().unwrap())
+
+            }
+        }
+    });
+}
+
 pub fn part_one(input: &str) -> Option<String> {
     let mut split = input.split("\n\n");
 
@@ -50,7 +72,13 @@ pub fn part_one(input: &str) -> Option<String> {
 }
 
 pub fn part_two(input: &str) -> Option<String> {
-    None
+    let mut split = input.split("\n\n");
+
+    let mut stacks = parse_initial_state(&mut split);
+
+    move_containers_9001(&mut split, &mut stacks);
+
+    Some(read_result(stacks))
 }
 
 fn main() {

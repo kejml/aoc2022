@@ -2,20 +2,24 @@
 
 use std::collections::HashSet;
 
-pub fn part_one(input: &str) -> Option<u32> {
-    let res: u32 = input.as_bytes().windows(4).map_while(|w| {
+fn find_packet(input: &str, packet_size: usize) -> Option<u32> {
+    let res: u32 = input.as_bytes().windows(packet_size).map_while(|w| {
         let window_set: HashSet<&u8> = w.iter().collect();
-        if window_set.len() == 4 {
+        if window_set.len() == packet_size {
             None
         } else {
             Some(1)
         }
     }).sum();
-    Some(res + 4)
+    Some(res + (packet_size as u32))
+}
+
+pub fn part_one(input: &str) -> Option<u32> {
+    find_packet(input, 4)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    find_packet(input, 14)
 }
 
 fn main() {
@@ -37,6 +41,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 6);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(19));
     }
 }

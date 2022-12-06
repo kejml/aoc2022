@@ -8,24 +8,24 @@ fn read_result(stacks: Vec<Vec<char>>) -> String {
 
 fn parse_initial_state(split: &mut Split<&str>) -> Vec<Vec<char>> {
     let mut stacks_input = split.next().unwrap().lines().collect::<Vec<_>>();
-    let number_of_stacks: usize = stacks_input.pop().unwrap().split(" ").last().unwrap().parse().unwrap();
+    let number_of_stacks: usize = stacks_input.pop().unwrap().split(' ').last().unwrap().parse().unwrap();
 
     stacks_input.reverse();
 
     let mut stacks: Vec<Vec<char>> = vec![vec![' '; 0]; number_of_stacks];
     for s in stacks_input {
         let s = s.chars().collect::<Vec<char>>();
-        for i in 0..number_of_stacks {
-            s.get(i * 4 + 1).filter(|c| { !c.is_ascii_whitespace() }).and_then(|container| {
-                let _ = &stacks[i].push(*container);
-                Some(container)
+        for (i, stack) in stacks.iter_mut().enumerate() {
+            s.get(i * 4 + 1).filter(|c| { !c.is_ascii_whitespace() }).map(|container| {
+                let _ = &stack.push(*container);
+                container
             });
         }
     }
     stacks
 }
 
-fn move_containers_9000(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<char>>) {
+fn move_containers_9000(instructions: &mut Split<&str>, stacks: &mut [Vec<char>]) {
     instructions.next().unwrap().lines().for_each(|line| {
         let instruction = line.split(' ').collect::<Vec<_>>();
         let times: u8 = instruction[1].parse().unwrap();
@@ -39,7 +39,7 @@ fn move_containers_9000(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<cha
     });
 }
 
-fn move_containers_9001(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<char>>) {
+fn move_containers_9001(instructions: &mut Split<&str>, stacks: &mut [Vec<char>]) {
     instructions.next().unwrap().lines().for_each(|line| {
         let instruction = line.split(' ').collect::<Vec<_>>();
         let times: u8 = instruction[1].parse().unwrap();

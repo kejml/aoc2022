@@ -1,5 +1,12 @@
-pub fn part_one(input: &str) -> Option<String> {
-    let mut split = input.split("\n\n");
+use std::str::Split;
+
+fn read_result(stacks: Vec<Vec<char>>) -> String {
+    stacks.iter().map(|stack| {
+        stack.last().unwrap_or(&' ')
+    }).collect::<Vec<&char>>().into_iter().collect()
+}
+
+fn parse_initial_state(split: &mut Split<&str>) -> Vec<Vec<char>> {
     let mut stacks_input = split.next().unwrap().lines().collect::<Vec<_>>();
     let number_of_stacks: usize = stacks_input.pop().unwrap().split(" ").last().unwrap().parse().unwrap();
 
@@ -15,8 +22,11 @@ pub fn part_one(input: &str) -> Option<String> {
             });
         }
     }
+    stacks
+}
 
-    split.next().unwrap().lines().for_each(|line| {
+fn move_containers_9000(instructions: &mut Split<&str>, stacks: &mut Vec<Vec<char>>) {
+    instructions.next().unwrap().lines().for_each(|line| {
         let instruction = line.split(' ').collect::<Vec<_>>();
         let times: u8 = instruction[1].parse().unwrap();
 
@@ -27,10 +37,16 @@ pub fn part_one(input: &str) -> Option<String> {
             to.push(value)
         }
     });
+}
 
-    Some(stacks.iter().map(|stack| {
-        stack.last().unwrap_or(&' ')
-    }).collect::<Vec<&char>>().into_iter().collect())
+pub fn part_one(input: &str) -> Option<String> {
+    let mut split = input.split("\n\n");
+
+    let mut stacks = parse_initial_state(&mut split);
+
+    move_containers_9000(&mut split, &mut stacks);
+
+    Some(read_result(stacks))
 }
 
 pub fn part_two(input: &str) -> Option<String> {
@@ -56,6 +72,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 5);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(String::from("MCD")))
     }
 }

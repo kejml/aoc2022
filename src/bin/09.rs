@@ -104,10 +104,11 @@ impl Knot {
 pub fn part_one(input: &str) -> Option<u32> {
     let mut visited = HashSet::<(i32, i32)>::new();
     visited.insert((0, 0));
+    // TODO reuse LongRope from part 2
     let mut rope = Rope { head_x: 0, head_y: 0, tail_x: 0, tail_y: 0 };
 
     input.lines().for_each(|command| {
-        let mut iter = command.split(' ').into_iter();
+        let mut iter = command.split(' ');
         let direction = iter.next().unwrap().chars().next().unwrap();
         let num_moves = iter.next().unwrap().parse::<i32>().unwrap();
         for _i in 0..num_moves {

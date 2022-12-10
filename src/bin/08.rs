@@ -93,7 +93,9 @@ pub fn scenic_down(trees: &[Vec<Tree>], x: usize, y: usize, size: usize) -> u32 
     score
 }
 
-pub fn parse_and_process(input: &str, processor: &dyn Fn(&mut Vec<Vec<Tree>>, usize, usize, usize, usize) -> ()) -> Vec<Vec<Tree>> {
+type Processor = dyn Fn(&mut [Vec<Tree>], usize, usize, usize, usize);
+
+pub fn parse_and_process(input: &str, processor: &Processor) -> Vec<Vec<Tree>> {
     let mut trees = input.lines().map(|line| {
         line.chars().map(|ch| {
             Tree { height: ch.to_digit(10).unwrap() as u8, visible: false, scenic_score: 0 }
@@ -111,18 +113,18 @@ pub fn parse_and_process(input: &str, processor: &dyn Fn(&mut Vec<Vec<Tree>>, us
     trees
 }
 
-fn is_tree_visible(trees: &mut Vec<Vec<Tree>>, num_lines: usize, num_trees: usize, x: usize, y: usize) {
+fn is_tree_visible(trees: &mut [Vec<Tree>], num_lines: usize, num_trees: usize, x: usize, y: usize) {
     if x == 0 || y == 0 || x == num_lines - 1 || y == num_trees - 1
-        || visible_left(&trees, x, y)
-        || visible_up(&trees, x, y)
-        || visible_right(&trees, x, y, num_trees)
-        || visible_down(&trees, x, y, num_lines)
+        || visible_left(trees, x, y)
+        || visible_up(trees, x, y)
+        || visible_right(trees, x, y, num_trees)
+        || visible_down(trees, x, y, num_lines)
     {
         trees[x][y].visible = true
     }
 }
 
-fn compute_scenic_score(trees: &mut Vec<Vec<Tree>>, num_lines: usize, num_trees: usize, x: usize, y: usize) {
+fn compute_scenic_score(trees: &mut [Vec<Tree>], num_lines: usize, num_trees: usize, x: usize, y: usize) {
     if x == 0 || y == 0 || x == num_lines - 1 || y == num_trees - 1 {
         trees[x][y].scenic_score = 0
     } else {

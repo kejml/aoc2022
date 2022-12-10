@@ -1,6 +1,7 @@
 pub struct Tree {
     height: u8,
     visible: bool,
+    scenic_score: u32,
 }
 
 pub fn visible_left(trees: &[Vec<Tree>], x: usize, y: usize) -> bool {
@@ -43,10 +44,59 @@ pub fn visible_down(trees: &[Vec<Tree>], x: usize, y: usize, size: usize) -> boo
     true
 }
 
+
+pub fn scenic_left(trees: &[Vec<Tree>], x: usize, y: usize) -> u32 {
+    let mut score = 0;
+    let height = trees[x][y].height;
+    for i in (0..x).rev() {
+        score += 1;
+        if trees[i][y].height >= height {
+            break;
+        }
+    }
+    score
+}
+
+pub fn scenic_up(trees: &[Vec<Tree>], x: usize, y: usize) -> u32 {
+    let mut score = 0;
+    let height = trees[x][y].height;
+    for i in (0..y).rev() {
+        score += 1;
+        if trees[x][i].height >= height {
+            break;
+        }
+    }
+    score
+}
+
+pub fn scenic_right(trees: &[Vec<Tree>], x: usize, y: usize, size: usize) -> u32 {
+    let mut score = 0;
+    let height = trees[x][y].height;
+    for line in trees.iter().take(size).skip(x + 1) {
+        score += 1;
+        if line[y].height >= height {
+            break;
+        }
+    }
+    score
+}
+
+pub fn scenic_down(trees: &[Vec<Tree>], x: usize, y: usize, size: usize) -> u32 {
+    let mut score = 0;
+    let height = trees[x][y].height;
+    for i in (y + 1)..size {
+        score += 1;
+        if trees[x][i].height >= height {
+            break;
+        }
+    }
+    score
+}
+
 pub fn parse_and_process(input: &str, processor: &dyn Fn(&mut Vec<Vec<Tree>>, usize, usize, usize, usize) -> ()) -> Vec<Vec<Tree>> {
     let mut trees = input.lines().map(|line| {
         line.chars().map(|ch| {
-            Tree { height: ch.to_digit(10).unwrap() as u8, visible: false }
+            Tree { height: ch.to_digit(10).unwrap() as u8, visible: false, scenic_score: 0 }
         }).collect::<Vec<Tree>>()
     }).collect::<Vec<Vec<_>>>();
 
@@ -78,8 +128,18 @@ fn is_tree_visible(trees: &mut Vec<Vec<Tree>>, num_lines: usize, num_trees: usiz
     }
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+fn compute_scenic_score(trees: &mut Vec<Vec<Tree>>, num_lines: usize, num_trees: usize, x: usize, y: usize) {
+    if x == 0 || y == 0 || x == num_lines - 1 || y == num_trees - 1 {
+        trees[x][y].scenic_score = 0
+    } else {
+        trees[x][y].scenic_score = scenic_left(trees, x, y) * scenic_up(trees, x, y) * scenic_right(trees, x, y, num_trees) * scenic_down(trees, x, y, num_lines);
+    }
+}
+
+pub fn part_two(input: &str) -> Option<u32> {
+    let trees = parse_and_process(input, &compute_scenic_score);
+    let result = trees.iter().flatten().max_by_key(|tree| { tree.scenic_score });
+    Some(result.unwrap().scenic_score)
 }
 
 fn main() {
@@ -101,6 +161,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 8);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(8));
     }
 }

@@ -43,7 +43,7 @@ pub fn visible_down(trees: &[Vec<Tree>], x: usize, y: usize, size: usize) -> boo
     true
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn parse_and_process(input: &str, processor: &dyn Fn(&mut Vec<Vec<Tree>>, usize, usize, usize, usize) -> ()) -> Vec<Vec<Tree>> {
     let mut trees = input.lines().map(|line| {
         line.chars().map(|ch| {
             Tree { height: ch.to_digit(10).unwrap() as u8, visible: false }
@@ -55,19 +55,27 @@ pub fn part_one(input: &str) -> Option<u32> {
 
     for x in 0..num_lines {
         for y in 0..num_trees {
-            if x == 0 || y == 0 || x == num_lines - 1 || y == num_trees - 1
-                || visible_left(&trees, x, y)
-                || visible_up(&trees, x, y)
-                || visible_right(&trees, x, y, num_trees)
-                || visible_down(&trees, x, y, num_lines)
-            {
-                trees[x][y].visible = true
-            }
+            processor(&mut trees, num_lines, num_trees, x, y)
         }
     }
+    trees
+}
 
+pub fn part_one(input: &str) -> Option<u32> {
+    let trees = parse_and_process(input, &is_tree_visible);
     let result = trees.iter().flatten().filter(|tree| { tree.visible }).count();
     Some(result as u32)
+}
+
+fn is_tree_visible(trees: &mut Vec<Vec<Tree>>, num_lines: usize, num_trees: usize, x: usize, y: usize) {
+    if x == 0 || y == 0 || x == num_lines - 1 || y == num_trees - 1
+        || visible_left(&trees, x, y)
+        || visible_up(&trees, x, y)
+        || visible_right(&trees, x, y, num_trees)
+        || visible_down(&trees, x, y, num_lines)
+    {
+        trees[x][y].visible = true
+    }
 }
 
 pub fn part_two(_input: &str) -> Option<u32> {

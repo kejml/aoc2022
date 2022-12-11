@@ -27,8 +27,38 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(result as u32)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    let mut cycles = 0;
+    let mut x: i32 = 1;
+    let mut picture = String::new();
+    input.lines().for_each(|line| {
+        draw_pixel(cycles, x, &mut picture);
+        let mut instruction = line.split(' ');
+        if instruction.next().unwrap() == "noop" {
+            cycles += 1;
+        } else {
+            cycles += 1;
+            draw_pixel(cycles, x, &mut picture);
+            cycles += 1;
+            let diff = instruction.next().unwrap().parse::<i32>().unwrap();
+            x += diff;
+        }
+    });
+    Some(picture)
+}
+
+fn draw_pixel(cycles: i32, x: i32, picture: &mut String){
+    let beam_position = cycles % 40;
+
+    if cycles != 0 && beam_position == 0 {
+        picture.push('\n');
+    }
+
+    if (beam_position - x).abs() <= 1 {
+        picture.push('#');
+    } else {
+        picture.push('.');
+    }
 }
 
 fn main() {
@@ -50,6 +80,12 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 10);
-        assert_eq!(part_two(&input), None);
+        let expected = "##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....".to_string();
+        assert_eq!(part_two(&input), Some(expected));
     }
 }

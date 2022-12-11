@@ -2,14 +2,6 @@ use std::cell::RefCell;
 use std::collections::HashSet;
 use std::ops::Deref;
 
-pub fn signum(x: i32) -> i32 {
-    match x {
-        1..=i32::MAX => { 1 }
-        0 => { 0 }
-        i32::MIN..=-1 => { -1 }
-    }
-}
-
 struct Knot {
     x: i32,
     y: i32,
@@ -57,8 +49,8 @@ impl LongRope {
 impl Knot {
     fn move_knot(&mut self, parent: &Knot) -> (i32, i32) {
         if (self.x - parent.x).abs() > 1 || (self.y - parent.y).abs() > 1 {
-            self.y -= signum(self.y - parent.y);
-            self.x -= signum(self.x - parent.x);
+            self.y -= (self.y - parent.y).signum();
+            self.x -= (self.x - parent.x).signum();
         }
         (self.x, self.y)
     }

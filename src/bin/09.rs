@@ -10,13 +10,6 @@ pub fn signum(x: i32) -> i32 {
     }
 }
 
-struct Rope {
-    head_x: i32,
-    head_y: i32,
-    tail_x: i32,
-    tail_y: i32,
-}
-
 struct Knot {
     x: i32,
     y: i32,
@@ -30,36 +23,6 @@ impl Clone for Knot {
 
 struct LongRope {
     knots: Vec<RefCell<Knot>>,
-}
-
-impl Rope {
-    fn left(&mut self) -> (i32, i32) {
-        self.head_x -= 1;
-        self.move_tail()
-    }
-
-    fn right(&mut self) -> (i32, i32) {
-        self.head_x += 1;
-        self.move_tail()
-    }
-
-    fn up(&mut self) -> (i32, i32) {
-        self.head_y -= 1;
-        self.move_tail()
-    }
-
-    fn down(&mut self) -> (i32, i32) {
-        self.head_y += 1;
-        self.move_tail()
-    }
-
-    fn move_tail(&mut self) -> (i32, i32) {
-        if (self.tail_x - self.head_x).abs() > 1 || (self.tail_y - self.head_y).abs() > 1 {
-            self.tail_y -= signum(self.tail_y - self.head_y);
-            self.tail_x -= signum(self.tail_x - self.head_x);
-        }
-        (self.tail_x, self.tail_y)
-    }
 }
 
 impl LongRope {
@@ -102,32 +65,16 @@ impl Knot {
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut visited = HashSet::<(i32, i32)>::new();
-    visited.insert((0, 0));
-    // TODO reuse LongRope from part 2
-    let mut rope = Rope { head_x: 0, head_y: 0, tail_x: 0, tail_y: 0 };
-
-    input.lines().for_each(|command| {
-        let mut iter = command.split(' ');
-        let direction = iter.next().unwrap().chars().next().unwrap();
-        let num_moves = iter.next().unwrap().parse::<i32>().unwrap();
-        for _i in 0..num_moves {
-            let tail_pos = match direction {
-                'R' => { rope.right() }
-                'L' => { rope.left() }
-                'U' => { rope.up() }
-                'D' => { rope.down() }
-                _ => panic!("Unexpected input")
-            };
-            visited.insert(tail_pos);
-        }
-    });
-    Some(visited.len() as u32)
+    simulate_rope(input, 2)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
+    simulate_rope(input, 10)
+}
+
+fn simulate_rope(input: &str, rope_length: usize) -> Option<u32> {
     let mut visited = HashSet::<(i32, i32)>::new();
-    let mut rope = LongRope { knots: vec!(RefCell::new(Knot { x: 0, y: 0 }); 10) };
+    let mut rope = LongRope { knots: vec!(RefCell::new(Knot { x: 0, y: 0 }); rope_length) };
     input.lines().for_each(|command| {
         let mut iter = command.split(' ');
         let direction = iter.next().unwrap().chars().next().unwrap();

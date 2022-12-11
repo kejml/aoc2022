@@ -8,7 +8,7 @@ fn read_result(stacks: Vec<Vec<char>>) -> String {
 
 fn parse_initial_state(split: &mut Split<&str>) -> Vec<Vec<char>> {
     let mut stacks_input = split.next().unwrap().lines().collect::<Vec<_>>();
-    let number_of_stacks: usize = stacks_input.pop().unwrap().split(' ').last().unwrap().parse().unwrap();
+    let number_of_stacks: usize = stacks_input.pop().unwrap().split(' ').filter(|l| {!l.is_empty()}).last().unwrap().parse().unwrap();
 
     stacks_input.reverse();
 

@@ -6,8 +6,9 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 fn calories_per_elf(input: &str) -> Map<Split<&str>, fn(&str) -> u32> {
-    input.split("\n\n").map(|elf| {
-        let calories = elf.split('\n').map(|food| {
+    input.split("\n\n")
+        .map(|elf| {
+        let calories = elf.split('\n').filter(|l| {!l.is_empty()}).map(|food| {
             food.parse::<u32>().expect("Invalid input")
         }).sum();
         calories

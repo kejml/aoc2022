@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use eval::Expr;
-use serde_json;
 
 struct Monkey {
     items: RefCell<Vec<i64>>,
@@ -66,7 +65,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(_input: &str) -> Option<u32> {
     None
 }
 

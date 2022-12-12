@@ -51,7 +51,7 @@ fn bfs (map: &Vec<Vec<i8>>, start: (usize, usize), end: (usize, usize)) -> i32 {
         if position == end {
             let height = map.len();
             let width = map[0].len();
-            print_path(width, height, &map, &path, end);
+            // print_path(width, height, &map, &path, end);
             return count_length(&path, end);
         }
         for next in neighbours(position).iter().filter(|n| {is_accessible(map, position, **n)}) {
@@ -117,8 +117,29 @@ fn is_accessible(map: &Vec<Vec<i8>>, position: (usize, usize), next: (usize, usi
 }
 
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let mut map = parse(input);
+
+    let height = map.len();
+    let width = map[0].len();
+
+
+    let mut starts = Vec::<(usize, usize)>::new();
+    let mut end = (0,0);
+    for j in 0..height {
+        for i in 0..width {
+            if map[j][i] == 0 || map[j][i] == 1 {
+                starts.push((j,i));
+                map[j][i] = 1;
+            } else if map[j][i] == 27 {
+                end = (j,i);
+                map[j][i] = 26;
+            }
+        }
+    };
+    starts.iter().map(|start| {
+        bfs(&map, *start, end) as u32
+    }).min()
 }
 
 fn main() {

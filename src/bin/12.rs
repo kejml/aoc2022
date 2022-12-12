@@ -22,14 +22,14 @@ pub fn part_one(input: &str) -> Option<u32> {
 
     let mut start = (0,0);
     let mut end = (0,0);
-    for j in 0..height {
-        for i in 0..width {
-            if map[j][i] == 0 {
+    for  (j, line) in map.iter_mut().enumerate().take(height) {
+        for  (i, node) in line.iter_mut().enumerate().take(width)  {
+            if *node == 0 {
                 start = (j,i);
-                map[j][i] = 1;
-            } else if map[j][i] == 27 {
+                *node = 1;
+            } else if *node == 27 {
                 end = (j,i);
-                map[j][i] = 26;
+                *node = 26;
             }
         }
     };
@@ -49,13 +49,11 @@ fn bfs (map: &Vec<Vec<i8>>, start: (usize, usize), end: (usize, usize)) -> i32 {
     while !queue.is_empty() {
         let position = queue.pop_front().unwrap();
         if position == end {
-            let height = map.len();
-            let width = map[0].len();
-            // print_path(width, height, &map, &path, end);
+            // print_path(&map, &path, end);
             return count_length(&path, end);
         }
         for next in neighbours(position).iter().filter(|n| {is_accessible(map, position, **n)}) {
-            if !explored.contains(&next) {
+            if !explored.contains(next) {
                 explored.insert(*next);
                 queue.push_back(*next);
                 path.insert(*next, position);
@@ -70,24 +68,25 @@ fn count_length(path: &HashMap::<(usize, usize), (usize, usize)>, end: (usize, u
     let mut pos = Some(&end);
     let mut length = 0;
     while pos.is_some() {
-        pos = path.get(&pos.unwrap());
+        pos = path.get(pos.unwrap());
         length += 1;
     }
     length -1
 }
 
-fn print_path(width: usize, height: usize, map: &Vec<Vec<i8>>, path: &HashMap::<(usize, usize), (usize, usize)>, end: (usize, usize)) {
-
+fn print_path(map: &Vec<Vec<i8>>, path: &HashMap::<(usize, usize), (usize, usize)>, end: (usize, usize)) {
+    let height = map.len();
+    let width = map[0].len();
     let mut visual_path = vec![vec![' '; width]; height];
     let mut pos = Some(&end);
     while pos.is_some() {
         visual_path[pos.unwrap().0][pos.unwrap().1] = (map[pos.unwrap().0][pos.unwrap().1] + 96) as u8 as char;
-        pos = path.get(&pos.unwrap());
+        pos = path.get(pos.unwrap());
     }
 
-    for j in 0..height {
-        for i in 0..width {
-            print!("{}", visual_path[j][i]);
+    for line in visual_path.iter().take(height) {
+        for node in line.iter().take(width) {
+            print!("{node}");
         }
         println!();
     };
@@ -109,11 +108,7 @@ fn is_accessible(map: &Vec<Vec<i8>>, position: (usize, usize), next: (usize, usi
     let height = map.len();
     let width = map[0].len();
 
-    if next.0 >= height || next.1 >= width || (map[next.0][next.1] - map[position.0][position.1]) > 1 {
-        false
-    } else {
-        true
-    }
+    !(next.0 >= height || next.1 >= width || (map[next.0][next.1] - map[position.0][position.1]) > 1)
 }
 
 
@@ -126,14 +121,14 @@ pub fn part_two(input: &str) -> Option<u32> {
 
     let mut starts = Vec::<(usize, usize)>::new();
     let mut end = (0,0);
-    for j in 0..height {
-        for i in 0..width {
-            if map[j][i] == 0 || map[j][i] == 1 {
+    for (j, line) in map.iter_mut().enumerate().take(height) {
+        for (i, node) in line.iter_mut().enumerate().take(width) {
+            if *node == 0 || *node == 1 {
                 starts.push((j,i));
-                map[j][i] = 1;
-            } else if map[j][i] == 27 {
+                *node = 1;
+            } else if *node == 27 {
                 end = (j,i);
-                map[j][i] = 26;
+                *node = 26;
             }
         }
     };

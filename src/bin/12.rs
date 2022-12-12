@@ -49,7 +49,6 @@ fn bfs (map: &Vec<Vec<i8>>, start: (usize, usize), end: (usize, usize)) -> i32 {
     while !queue.is_empty() {
         let position = queue.pop_front().unwrap();
         if position == end {
-            // print_path(&map, &path, end);
             return count_length(&path, end);
         }
         for next in neighbours(position).iter().filter(|n| {is_accessible(map, position, **n)}) {
@@ -72,24 +71,6 @@ fn count_length(path: &HashMap::<(usize, usize), (usize, usize)>, end: (usize, u
         length += 1;
     }
     length -1
-}
-
-fn print_path(map: &Vec<Vec<i8>>, path: &HashMap::<(usize, usize), (usize, usize)>, end: (usize, usize)) {
-    let height = map.len();
-    let width = map[0].len();
-    let mut visual_path = vec![vec![' '; width]; height];
-    let mut pos = Some(&end);
-    while pos.is_some() {
-        visual_path[pos.unwrap().0][pos.unwrap().1] = (map[pos.unwrap().0][pos.unwrap().1] + 96) as u8 as char;
-        pos = path.get(pos.unwrap());
-    }
-
-    for line in visual_path.iter().take(height) {
-        for node in line.iter().take(width) {
-            print!("{node}");
-        }
-        println!();
-    };
 }
 
 fn neighbours(position: (usize, usize)) -> Vec<(usize, usize)> {

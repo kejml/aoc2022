@@ -113,6 +113,7 @@ pub fn part_two(input: &str) -> Option<u32> {
             }
         }
     };
+    //TODO this just brute-forces all starts, more effective would be to go from the end and collect all path lengths, that and on the elevation 1
     starts.iter().map(|start| {
         bfs(&map, *start, end) as u32
     }).min()

@@ -35,7 +35,7 @@ impl PartialEq<Self> for Packet {
 
 impl PartialOrd<Self> for Packet {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        println!("Comparing {self} and {other}");
+        // println!("Comparing {self} and {other}");
         let result = Some(match self {
             PValue(left_value) => {
                 match other {
@@ -166,8 +166,36 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let mut packets = input.split('\n').filter(|line| {!line.is_empty()}).map(parse_packet).collect::<Vec<Packet>>();
+    packets.push(PList(vec![PList(vec![PValue(2)])]));
+    packets.push(PList(vec![PList(vec![PValue(6)])]));
+    packets.sort();
+
+    let mut result:u32 = 1;
+    for (index,packet) in packets.iter().enumerate() {
+        if is_divider(packet, 2) || is_divider(packet, 6) {
+            result *= index as u32 + 1
+        }
+    }
+    Some(result)
+}
+
+pub fn is_divider(packet: &Packet, value: u32) -> bool{
+    if let PList(items) = packet {
+        if items.len() == 1 {
+            if let PList(items) = items.first().unwrap() {
+                if items.len() == 1 {
+                    if let PValue(p_value) = items.first().unwrap() {
+                        if *p_value == value {
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
 }
 
 fn main() {

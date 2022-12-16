@@ -1,7 +1,9 @@
+use std::cmp::Ordering;
+use std::cmp::Ordering::{Equal, Greater, Less};
 use std::fmt::{Display, Formatter};
-use crate::OrderResult::{No, Unknown, Yes};
 use crate::Packet::{PList, PValue};
 
+#[derive(Eq)]
 pub enum Packet {
     PValue(u32),
     PList(Vec<Packet>),
@@ -25,59 +27,67 @@ impl Display for Packet {
     }
 }
 
-pub enum OrderResult {
-    Yes,
-    No,
-    Unknown,
+impl PartialEq<Self> for Packet {
+    fn eq(&self, other: &Self) -> bool {
+        self == other
+    }
 }
 
-pub fn correct_order(left: &Packet, right: &Packet) -> OrderResult {
-    println!("Comparing {left} and {right}");
-    let result = match left {
-        PValue(left_value) => {
-            match right {
-                PValue(right_value) => {
-                    match left_value {
-                        l if l > right_value => { No }
-                        l if l < right_value => { Yes }
-                        _ => { Unknown }
+impl PartialOrd<Self> for Packet {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        println!("Comparing {self} and {other}");
+        let result = Some(match self {
+            PValue(left_value) => {
+                match other {
+                    PValue(right_value) => {
+                        match left_value {
+                            l if l > right_value => { Greater }
+                            l if l < right_value => { Less }
+                            _ => { Equal }
 
-                    }
-                }
-                PList(_) => {
-                    correct_order(&PList(vec![PValue(*left_value)]), right)
-                }
-            }
-        }
-        PList(left_items) => {
-            match right {
-                PValue(right_value) => {
-                    correct_order(left, &PList(vec![PValue(*right_value)]))
-                }
-                PList(right_items) => {
-                    for (index, left_item) in left_items.iter().enumerate() {
-                        if let Some(right_item) = right_items.get(index) {
-                            let list_result = correct_order(left_item, right_item);
-                            match list_result {
-                                Yes => { return Yes; }
-                                No => { return No; }
-                                Unknown => { continue; }
-                            }
-                        } else {
-                            return No;
                         }
                     }
-                    return if right_items.len() > left_items.len() {
-                        Yes
-                    } else {
-                        Unknown
-                    };
+                    PList(_) => {
+                        PList(vec![PValue(*left_value)]).partial_cmp(other).unwrap()
+                    }
                 }
             }
-        }
-    };
-    //println!("Result is {result}");
-    result
+            PList(left_items) => {
+                match other {
+                    PValue(right_value) => {
+                        self.partial_cmp(&PList(vec![PValue(*right_value)])).unwrap()
+                    }
+                    PList(right_items) => {
+                        for (index, left_item) in left_items.iter().enumerate() {
+                            if let Some(right_item) = right_items.get(index) {
+                                if let Some(list_result) = left_item.partial_cmp(right_item) {
+                                    match list_result {
+                                        Less => { return Some(Less); }
+                                        Greater => { return Some(Greater); }
+                                        Equal => { continue; }
+                                    }
+                                }
+                            } else {
+                                return Some(Greater);
+                            }
+                        }
+                        if right_items.len() > left_items.len() {
+                            Less
+                        } else {
+                            Equal
+                        }
+                    }
+                }
+            }
+        });
+        result
+    }
+}
+
+impl Ord for Packet {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -136,17 +146,16 @@ pub fn part_one(input: &str) -> Option<u32> {
 
         index += 1;
         let mut pairs = parsed_pair.iter();
-        let order_result = correct_order(pairs.next().unwrap(), pairs.next().unwrap());
-        match order_result {
-            Yes => {
+        match pairs.next().unwrap().cmp(pairs.next().unwrap()) {
+            Less => {
                 // println!("Pair {index} IS in correct order");
                 index
             }
-            No => {
+            Greater => {
                 // println!("Pair {index} is NOT in correct order");
                 0
             }
-            Unknown => {
+            Equal => {
                 // println!("Pair {index} is in UNKNOWN order");
                 0
             }

@@ -90,59 +90,61 @@ impl Ord for Packet {
     }
 }
 
+pub fn parse_packet(packet: &str) -> Packet {
+    let mut char_stack = Vec::<char>::new();
+    let mut parents = Vec::<Packet>::new();
+    let mut current_num: Option<u32> = None;
+    let mut current_plist: Option<Packet> = None;
+    for c in packet.chars() {
+        match c {
+            '[' => {
+                char_stack.push('[');
+                if let Some(current_plist) = current_plist {
+                    parents.push(current_plist)
+                }
+                current_plist = Some(PList(Vec::new()));
+            }
+            ']' => {
+                if current_num.is_some() {
+                    if let PList(items) = &mut current_plist.as_mut().unwrap() {
+                        items.push(PValue(current_num.unwrap()))
+                    }
+                    current_num = None
+                }
+                let parent = parents.pop();
+                if let Some(mut parent) = parent {
+                    if let PList(items) = &mut parent {
+                        items.push(current_plist.unwrap());
+                    }
+                    current_plist = Some(parent);
+                }
+                char_stack.pop();
+            }
+            ',' => {
+                if let Some(value) = current_num {
+                    if let PList(items) = &mut current_plist.as_mut().unwrap() {
+                        items.push(PValue(value))
+                    }
+                } // else previous is a list
+                current_num = None;
+            }
+            val => match current_num {
+                None => current_num = val.to_digit(10),
+                Some(n) => current_num = Some(n * 10 + val.to_digit(10).unwrap()),
+            },
+        }
+    }
+    // println!("Parsed: {}", current_plist.as_ref().unwrap().unwrap());
+    current_plist.unwrap()
+}
+
 pub fn part_one(input: &str) -> Option<u32> {
     let packets = input.split("\n\n");
 
 
     let mut index = 0;
     let result = packets.map(|pair| {
-        let parsed_pair = pair.split('\n').map(|packet| {
-            let mut char_stack = Vec::<char>::new();
-            let mut parents = Vec::<Packet>::new();
-            let mut current_num: Option<u32> = None;
-            let mut current_plist: Option<Packet> = None;
-            for c in packet.chars() {
-                match c {
-                    '[' => {
-                        char_stack.push('[');
-                        if let Some(current_plist) = current_plist {
-                            parents.push(current_plist)
-                        }
-                        current_plist = Some(PList(Vec::new()));
-                    }
-                    ']' => {
-                        if current_num.is_some() {
-                            if let PList(items) = &mut current_plist.as_mut().unwrap() {
-                                items.push(PValue(current_num.unwrap()))
-                            }
-                            current_num = None
-                        }
-                        let parent = parents.pop();
-                        if let Some(mut parent) = parent {
-                            if let PList(items) = &mut parent {
-                                items.push(current_plist.unwrap());
-                            }
-                            current_plist = Some(parent);
-                        }
-                        char_stack.pop();
-                    }
-                    ',' => {
-                        if let Some(value) = current_num {
-                            if let PList(items) = &mut current_plist.as_mut().unwrap() {
-                                items.push(PValue(value))
-                            }
-                        } // else previous is a list
-                        current_num = None;
-                    }
-                    val => match current_num {
-                        None => current_num = val.to_digit(10),
-                        Some(n) => current_num = Some(n * 10 + val.to_digit(10).unwrap()),
-                    },
-                }
-            }
-            // println!("Parsed: {}", current_plist.as_ref().unwrap().unwrap());
-            current_plist.unwrap()
-        }).collect::<Vec<_>>();
+        let parsed_pair = pair.split('\n').map(parse_packet).collect::<Vec<_>>();
 
         index += 1;
         let mut pairs = parsed_pair.iter();
@@ -187,6 +189,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 13);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(140));
     }
 }

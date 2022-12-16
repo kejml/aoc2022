@@ -22,20 +22,7 @@ pub fn sand_next(map: &HashMap<(usize, usize), Tile>, x: usize, y: usize) -> Opt
     }
 }
 
-pub fn print_debug(map: &HashMap<(usize, usize), Tile>) {
-    for y in 0..10 {
-        for x in 494..504 {
-            match map.get(&(x, y)) {
-                None => { print!(".") }
-                Some(Rock) => { print!("#") }
-                Some(Sand) => { print!("o") }
-            }
-        }
-        println!();
-    }
-}
-
-pub fn part_one(input: &str) -> Option<u32> {
+fn map_parse(input: &str) -> HashMap<(usize, usize), Tile> {
     let mut map = HashMap::<(usize, usize), Tile>::new();
     // TODO very crude parsing
     input.split('\n').for_each(|line| {
@@ -67,7 +54,11 @@ pub fn part_one(input: &str) -> Option<u32> {
             };
         });
     });
-    print_debug(&map);
+    map
+}
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let mut map = map_parse(input);
 
     let max_depth = map.keys().map(|k| { k.1 }).max().unwrap();
 
@@ -88,8 +79,30 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(sands - 1)
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+
+    let mut map = map_parse(input);
+
+    let max_depth = map.keys().map(|k| { k.1 }).max().unwrap();
+
+    let mut sands = 0;
+
+    loop {
+        sands += 1;
+        let mut prev_send = (500, 0);
+        while let Some(next) = sand_next(&map, prev_send.0, prev_send.1) {
+            prev_send = next;
+            if next.1 > max_depth {
+                map.insert(prev_send, Sand);
+                break;
+            }
+        }
+        map.insert(prev_send, Sand);
+        if prev_send == (500, 0) {
+            break
+        }
+    }
+    Some(sands)
 }
 
 fn main() {
@@ -111,6 +124,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 14);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(93));
     }
 }
